@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Correlational & Regression Analysis - Presentation App</title>
+  <style>
+    :root {
+      --text: #ffffff;
+      --text-muted: #f1f5f9;
+      --accent-orange: #f97316;
+      --accent-glow: #eab308;
+      --card-bg: rgba(18, 12, 10, 0.82);
+      --card-inner: rgba(0, 0, 0, 0.65);
+      --border: rgba(255, 255, 255, 0.2);
+      --success: #22c55e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #030202;
+      /* Recreating the fluid gradient mesh glow from the reference image */
+      background-image: 
+        radial-gradient(circle at 45% 55%, rgba(249, 115, 22, 0.8) 0%, rgba(234, 179, 8, 0.5) 22%, transparent 50%),
+        radial-gradient(circle at 75% 25%, rgba(194, 65, 12, 0.6) 0%, rgba(154, 52, 18, 0.3) 30%, transparent 55%),
+        radial-gradient(circle at 30% 70%, rgba(217, 119, 6, 0.4) 0%, transparent 45%);
+      background-attachment: fixed;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Top Utility Bar */
+    .top-bar {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: flex-end;
+      padding: 15px 20px 0;
+    }
+
+    /* Deck Container */
+    .deck-container {
+      width: 100%;
+      max-width: 1100px;
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 45px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.85);
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    .slide.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* All White Typography */
+    .slide-tag {
+      display: inline-block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #ffffff;
+      opacity: 0.9;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #ffffff;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #ffffff;
+      opacity: 0.9;
+      margin-bottom: 25px;
+    }
+
+    /* HUGE WHITE QUESTION TEXT FOR BACK-ROW VISIBILITY */
+    .question-title {
+      font-size: 2.2rem;
+      color: #ffffff;
+      margin-bottom: 16px;
+      font-weight: 800;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .question-text {
+      font-size: 2.6rem;
+      color: #ffffff;
+      line-height: 1.4;
+      font-weight: 700;
+      margin-bottom: 25px;
+      letter-spacing: 0.2px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+    }
+
+    .info-text {
+      font-size: 1.1rem;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+
+    /* Form Inputs */
+    .input-group {
+      margin: 20px 0;
+    }
+
+    label {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 14px 18px;
+      background: var(--card-inner);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #ffffff;
+      font-size: 1.1rem;
+      margin-bottom: 14px;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]::placeholder, input[type="number"]::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+
+    /* Presentation Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background: var(--card-inner);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    th, td {
+      padding: 12px 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+      font-size: 1.1rem;
+      color: #ffffff;
+    }
+
+    th {
+      background-color: rgba(0, 0, 0, 0.8);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* Solution Box */
+    .solution-box {
+      display: none;
+      background: rgba(6, 78, 59, 0.85);
+      border-left: 5px solid var(--success);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      color: #ffffff;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .solution-box h4 {
+      color: #ffffff;
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+
+    .solution-box p, .solution-box li {
+      color: #ffffff;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .solution-box table {
+      background: rgba(0, 0, 0, 0.5);
+      color: #ffffff;
+    }
+
+    .solution-box th {
+      background: rgba(6, 78, 59, 0.9);
+      color: #ffffff;
+      font-size: 1rem;
+    }
+
+    .solution-box td {
+      font-size: 1rem;
+      color: #ffffff;
+    }
+
+    .formula-box {
+      background: var(--card-inner);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-family: monospace;
+      color: #ffffff;
+      margin: 18px 0;
+      font-size: 1.1rem;
+    }
+
+    /* Navigation & Action Buttons */
+    .controls {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px 30px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-nav {
+      background: rgba(0, 0, 0, 0.6);
+      color: #ffffff;
+      border: 1px solid var(--border);
+    }
+
+    .btn-nav:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-action {
+      background: #ea580c;
+      color: #ffffff;
+    }
+
+    .btn-action:hover {
+      background: #c2410c;
+    }
+
+    .btn-fullscreen {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      border: 1px solid var(--border);
+    }
+
+    .btn-fullscreen:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .progress-text {
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .slide { padding: 25px 20px; }
+      .question-text { font-size: 1.8rem; }
+      .controls { flex-wrap: wrap; gap: 10px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP UTILITY BAR (FULLSCREEN TOGGLE) -->
+<div class="top-bar">
+  <button class="btn btn-fullscreen" onclick="toggleFullScreen()">⛶ Maximizer / Fullscreen</button>
+</div>
+
+<div class="deck-container">
+
+  <!-- SLIDE 1: TITLE SLIDE -->
+  <div class="slide active">
+    <span class="slide-tag">Interactive Presentation Deck</span>
+    <h1>Correlational & Regression Analysis</h1>
+    <p class="subtitle">Pearson's r, Spearman's Rank Correlation, and Linear Regression</p>
+    <div style="background: var(--card-inner); padding: 20px; border-radius: 10px; border: 1px solid var(--border);">
+      <p class="info-text"><strong>Instructions:</strong> Use the <strong>Previous / Next</strong> buttons or your keyboard's <strong>Left / Right Arrow keys</strong> to navigate through slides. Click <strong>"Maximizer / Fullscreen"</strong> above for full-screen projection, and click <em>"Show Answer & Solution"</em> to reveal key answers.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: IDENTIFICATION Q1 -->
+  <div class="slide">
+    <span class="slide-tag">Part I: Identification • Item 1 / 5</span>
+    <div class="question-title">Question 1</div>
+    <p class="question-text">What statistical test is used to measure the strength and direction of a linear relationship between two continuous/numerical variables?</p>
+    <div class="input-group">
+      <input type="text" id="iq1" placeholder="Type your answer here...">
+    </div>
+    <button class="btn btn-action" onclick="toggleSolution(this)">Show Answer & Solution</button>
+    <div class="solution-box">
+      <h4>Correct Answer: Pearson's r (Pearson Product-Moment Correlation)</h4>
+      <p>Pearson's r measures continuous/numerical data that exhibits an approximately linear relationship.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: IDENTIFICATION Q2 -->
+  <div class="slide">
+    <span class="slide-tag">Part I: Identification • Item 2 / 5</span>
+    <div class="question-title">Question 2</div>
+    <p class="question-text">What non-parametric test evaluates the strength and direction of association between two ranked or ordinal variables using their rank values instead of raw numbers?</p>
+    <div class="input-group">
+      <input type="text" id="iq2" placeholder="Type your answer here...">
+    </div>
+    <button class="btn btn-action" onclick="toggleSolution(this)">Show Answer & Solution</button>
+    <div class="solution-box">
+      <h4>Correct Answer: Spearman's Rank Correlation</h4>
+      <p>Spearman's rank correlation calculates association based on ordinal rankings rather than continuous values.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: IDENTIFICATION Q3 -->
+  <div class="slide">
+    <span class="slide-tag">Part I: Identification • Item 3 / 5</span>
+    <div class="question-title">Question 3</div>
+    <p class="question-text">What statistical method is used to study relationships and predict an outcome variable based on independent predictor variables?</p>
+    <div class="input-group">
+      <input type="text" id="iq3" placeholder="Type your answer here...">
+    </div>
+    <button class="btn btn-action" onclick="toggleSolution(this)">Show Answer & Solution</button>
+    <div class="solution-box">
+      <h4>Correct Answer: Linear Regression</h4>
+      <p>Linear Regression establishes a line of best fit (Y = a + bX) to estimate or predict an unknown value from known predictor values.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: IDENTIFICATION Q4 -->
+  <div class="slide">
+    <span class="slide-tag">Part I: Identification • Item 4 / 5</span>
+    <div class="question-title">Question 4</div>
+    <p class="question-text">In regression analysis, what is the variable being predicted or estimated called (represented as Y)?</p>
+    <div class="input-group">
+      <input type="text" id="iq4" placeholder="Type your answer here...">
+    </div>
+    <button class="btn btn-action" onclick="toggleSolution(this)">Show Answer & Solution</button>
+    <div class="solution-box">
+      <h4>Correct Answer: Dependent Variable (or Outcome Variable)</h4>
+      <p>The variable being predicted is the Dependent Variable (Y), whereas the variable used to make predictions is the Independent Variable (X).</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: IDENTIFICATION Q5 -->
+  <div class="slide">
+    <span class="slide-tag">Part I: Identification • Item 5 / 5</span>
+    <div class="question-title">Question 5</div>
+    <p class="question-text">What statistic measures the difference between ranked values (R<sub>x</sub> - R<sub>y</sub>) when computing Spearman's rank correlation coefficient?</p>
+    <div class="input-group">
+      <input type="text" id="iq5" placeholder="Type your answer here...">
+    </div>
+    <button class="btn btn-action" onclick="toggleSolution(this)">Show Answer & Solution</button>
+    <div class="solution-box">
+      <h4>Correct Answer: Rank Difference (d)</h4>
+      <p>The variable <strong>d</strong> represents the difference between paired ranks (d = R<sub>x</sub> - R<sub>y</sub>).</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: PROBLEM 1 - PEARSON'S R -->
+  <div class="slide">
+    <span class="slide-tag">Part II: Problem Solving • Item 1</span>
+    <div class="question-title">Problem 1: Pearson's r</div>
+    <p class="question-text">A researcher collected study hours (X) and test scores (Y) for 5 students. Calculate Pearson's r:</p>
+    <table>
+      <thead>
+        <tr><th>Student</th><th>Study Hours (X)</th><th>Test Score (Y)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>A</td><td>2</td><td>60</td></tr>
+        <tr><td>B</td><td>4</td><td>70</td></tr>
+        <tr><td>C</td><td>6</td><td>80</td></tr>
+        <tr><td>D</td><td>8</td><td>90</td></tr>
+        <tr><td>E</td><td>10</td><td>100</td></tr>
+      </tbody>
+    </table>
+    <div class="formula-box">Formula: r = [nΣXY - (ΣX)(ΣY)] / √([nΣX² - (ΣX)²][nΣY² - (ΣY)²])</div>
+    <div class="input-group">
+      <label for="pq1">Your Answer:</label>
+      <input type="number" step="0.01" id="pq1" placeholder="e.g., 1.0">
+    </div>
+    <button class="btn btn-action" onclick="toggleSolution(this)">Show Answer & Solution</button>
+    <div class="solution-box">
+      <h4>Key Answer: r = 1.0</h4>
+      <p>
+        • n = 5<br>
+        • ΣX = 30, ΣY = 400<br>
+        • ΣX² = 220, ΣY² = 33,000, ΣXY = 2,600<br><br>
+        r = [5(2600) - (30)(400)] / √([5(220) - 30²][5(33000) - 400²])<br>
+        r = 1000 / √(200 × 5000) = 1000 / 1000 = <strong>1.0</strong> (Perfect Positive Correlation)
+      </p>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: PROBLEM 2 - SPEARMAN'S RANK -->
+  <div class="slide">
+    <span class="slide-tag">Part II: Problem Solving • Item 2</span>
+    <div class="question-title">Problem 2: Spearman's Rank Correlation</div>
+    <p class="question-text">Grades of 7 students in English (X) and Math (Y). Rank each set from 1 (highest) to 7 (lowest) to calculate Spearman's r<sub>s</sub>:</p>
+    <table>
+      <thead>
+        <tr><th>Student</th><th>English (X)</th><th>Math (Y)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>A</td><td>78</td><td>85</td></tr>
+        <tr><td>B</td><td>80</td><td>82</td></tr>
+        <tr><td>C</td><td>81</td><td>75</td></tr>
+        <tr><td>D</td><td>86</td><td>77</td></tr>
+        <tr><td>E</td><td>79</td><td>80</td></tr>
+        <tr><td>F</td><td>83</td><td>90</td></tr>
+        <tr><td>G</td><td>88</td><td>92</td></tr>
+      </tbody>
+    </table>
+    <div class="formula-box">Formula: r_s = 1 - (6Σd²) / [n(n² - 1)]</div>
+    <div class="input-group">
+      <label for="pq2">Your Answer (Round to 3 decimal places):</label>
+      <input type="number" step="0.001" id="pq2" placeholder="e.g., 0.214">
+    </div>
+    <button class="btn btn-action" onclick="toggleSolution(this)">Show Answer & Solution</button>
+    <div class="solution-box">
+      <h4>Key Answer: r<sub>s</sub> = 0.214</h4>
+      <p>Rank Assignments (Highest = 1):</p>
+      <ul>
+        <li>Student A: R<sub>x</sub>=7, R<sub>y</sub>=3 | d=4, d²=16</li>
+        <li>Student B: R<sub>x</sub>=5, R<sub>y</sub>=4 | d=1, d²=1</li>
+        <li>Student C: R<sub>x</sub>=4, R<sub>y</sub>=7 | d=-3, d²=9</li>
+        <li>Student D: R<sub>x</sub>=2, R<sub>y</sub>=6 | d=-4, d²=16</li>
+        <li>Student E: R<sub>x</sub>=6, R<sub>y</sub>=5 | d=1, d²=1</li>
+        <li>Student F: R<sub>x</sub>=3, R<sub>y</sub>=2 | d=1, d²=1</li>
+        <li>Student G: R<sub>x</sub>=1, R<sub>y</sub>=1 | d=0, d²=0</li>
+      </ul>
+      <p>Σd² = 44, n = 7<br>
+      r<sub>s</sub> = 1 - [6(44) / (7 × 48)] = 1 - (264 / 336) = <strong>0.214</strong></p>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: PROBLEM 3 - LINEAR REGRESSION -->
+  <div class="slide">
+    <span class="slide-tag">Part II: Problem Solving • Item 3</span>
+    <div class="question-title">Problem 3: Linear Regression Analysis</div>
+    <p class="question-text">Analyze if Training Hours (X) predict Sales Score (Y) and predict Y when X = 6 hours:</p>
+    <table>
+      <thead>
+        <tr><th>Employee</th><th>Training Hours (X)</th><th>Sales Score (Y)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>1</td><td>55</td></tr>
+        <tr><td>2</td><td>2</td><td>60</td></tr>
+        <tr><td>3</td><td>3</td><td>65</td></tr>
+        <tr><td>4</td><td>4</td><td>70</td></tr>
+        <tr><td>5</td><td>5</td><td>75</td></tr>
+      </tbody>
+    </table>
+    
+    <div class="input-group">
+      <label>Questions:</label>
+      <input type="text" placeholder="a. Independent = ?, Dependent = ?">
+      <input type="text" placeholder="b. Mean of X (X̄) = ?, Mean of Y (Ȳ) = ?">
+      <input type="text" placeholder="c. Slope (b) = ?, Y-intercept (a) = ?">
+      <input type="text" placeholder="d. Regression Equation (Y = a + bX)">
+      <input type="number" placeholder="e. Predict Y for X = 6 hours">
+    </div>
+
+    <button class="btn btn-action" onclick="toggleSolution(this)">Show Answer & Solution</button>
+    <div class="solution-box">
+      <h4>Key Answer & Full Calculation:</h4>
+      <p><strong>a. Variables:</strong> Independent (X) = Training Hours | Dependent (Y) = Sales Score</p>
+      <p><strong>b. Averages:</strong> X̄ = (1+2+3+4+5)/5 = <strong>3</strong> | Ȳ = (55+60+65+70+75)/5 = <strong>65</strong></p>
+      <p><strong>c. Slope & Intercept:</strong></p>
+      <table>
+        <thead>
+          <tr><th>X</th><th>Y</th><th>X - X̄</th><th>Y - Ȳ</th><th>(X - X̄)(Y - Ȳ)</th><th>(X - X̄)²</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>55</td><td>-2</td><td>-10</td><td>20</td><td>4</td></tr>
+          <tr><td>2</td><td>60</td><td>-1</td><td>-5</td><td>5</td><td>1</td></tr>
+          <tr><td>3</td><td>65</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>4</td><td>70</td><td>1</td><td>5</td><td>5</td><td>1</td></tr>
+          <tr><td>5</td><td>75</td><td>2</td><td>10</td><td>20</td><td>4</td></tr>
+          <tr><td colspan="4"><strong>Sum (Σ)</strong></td><td><strong>50</strong></td><td><strong>10</strong></td></tr>
+        </tbody>
+      </table>
+      <p>• Slope (b) = 50 / 10 = <strong>5</strong><br>
+      • Intercept (a) = 65 - (5)(3) = <strong>50</strong></p>
+      <p><strong>d. Equation:</strong> Y = 50 + 5X</p>
+      <p><strong>e. Prediction for X = 6:</strong> Y = 50 + 5(6) = <strong>80</strong></p>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: END SLIDE -->
+  <div class="slide">
+    <span class="slide-tag">Presentation End</span>
+    <h1>Quiz Completed!</h1>
+    <p class="subtitle">Great job reviewing Correlational Research & Regression Analysis.</p>
+    <button class="btn btn-action" onclick="goToSlide(0)">Restart Presentation</button>
+  </div>
+
+</div>
+
+<!-- CONTROLS FOOTER -->
+<div class="controls">
+  <button class="btn btn-nav" onclick="prevSlide()">← Previous</button>
+  <span class="progress-text" id="progress">Slide 1 of 10</span>
+  <button class="btn btn-nav" onclick="nextSlide()">Next →</button>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const progressText = document.getElementById('progress');
+
+  function updateSlides() {
+    slides.forEach((slide, index) => {
+      slide.classList.toggle('active', index === currentSlide);
+    });
+    progressText.textContent = `Slide ${currentSlide + 1} of ${slides.length}`;
+  }
+
+  function nextSlide() {
+    if (currentSlide < slides.length - 1) {
+      currentSlide++;
+      updateSlides();
+    }
+  }
+
+  function prevSlide() {
+    if (currentSlide > 0) {
+      currentSlide--;
+      updateSlides();
+    }
+  }
+
+  function goToSlide(index) {
+    currentSlide = index;
+    updateSlides();
+  }
+
+  function toggleSolution(btn) {
+    const solutionBox = btn.nextElementSibling;
+    if (solutionBox.style.display === 'block') {
+      solutionBox.style.display = 'none';
+      btn.textContent = 'Show Answer & Solution';
+    } else {
+      solutionBox.style.display = 'block';
+      btn.textContent = 'Hide Answer & Solution';
+    }
+  }
+
+  /* Fullscreen Toggle Function */
+  function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        alert(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'Space') {
+      nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+      prevSlide();
+    }
+  });
+</script>
+
+</body>
+</html>
